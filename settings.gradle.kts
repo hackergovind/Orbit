@@ -20,3 +20,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "BMTP"
 include(":app")
+include(":app-android")
