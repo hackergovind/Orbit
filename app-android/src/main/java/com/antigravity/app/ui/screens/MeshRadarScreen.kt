@@ -167,7 +167,7 @@ fun MeshRadarScreen(
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        text = "IP: ${node.ip} • Hops: ${node.hopCount}",
+                                        text = "Signal: ${node.rssi} dBm  •  Hop: ${node.hopCount}",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

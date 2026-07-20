@@ -1,8 +1,9 @@
 package com.antigravity.app.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmtp.transport.TransportManager
+import com.bmtp.transport.BleTransportManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,27 +23,27 @@ enum class AttachmentType {
 }
 
 data class ChatState(
-    val peerId: String = "",
+    val peerId: String = "",   // target MAC address
+    val peerName: String = "", // display name
     val messages: List<ChatMessage> = emptyList(),
     val isVoiceRecording: Boolean = false
 )
 
-class ChatViewModel : ViewModel() {
+class ChatViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _state = MutableStateFlow(ChatState())
     val state: StateFlow<ChatState> = _state.asStateFlow()
 
     init {
+        // Collect incoming BLE messages and add to chat
         viewModelScope.launch {
-            TransportManager.messageFlow.collect { netMsg ->
-                // Ensure we only show messages for the current peer (or a global group)
-                // For simplicity, we just add it to the chat
+            BleTransportManager.messageFlow.collect { bleMsg ->
                 val newMsg = ChatMessage(
                     id = System.currentTimeMillis().toString(),
-                    senderName = if (netMsg.isFromMe) "Me" else netMsg.senderId,
-                    text = netMsg.text,
+                    senderName = if (bleMsg.isFromMe) "Me" else bleMsg.senderId,
+                    text = bleMsg.text,
                     timestamp = System.currentTimeMillis(),
-                    isFromMe = netMsg.isFromMe
+                    isFromMe = bleMsg.isFromMe
                 )
                 _state.value = _state.value.copy(
                     messages = _state.value.messages + newMsg
@@ -51,16 +52,16 @@ class ChatViewModel : ViewModel() {
         }
     }
 
-    fun openChat(peerId: String) {
-        _state.value = _state.value.copy(peerId = peerId, messages = emptyList())
+    fun openChat(peerId: String, peerName: String = peerId) {
+        _state.value = _state.value.copy(peerId = peerId, peerName = peerName, messages = emptyList())
     }
 
     fun sendMessage(text: String) {
-        val currentPeer = _state.value.peerId
-        if (currentPeer.isEmpty()) return
-        
+        val peer = _state.value.peerId
+        if (peer.isEmpty() || text.isBlank()) return
+
         viewModelScope.launch {
-            TransportManager.sendMessage(currentPeer, text)
+            BleTransportManager.sendMessage(getApplication(), peer, text)
         }
     }
 

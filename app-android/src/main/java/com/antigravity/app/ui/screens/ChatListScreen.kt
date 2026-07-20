@@ -81,10 +81,10 @@ fun ChatListScreen(
                     items(meshState.activeNodes) { node ->
                         ChatRowItem(
                             name = node.name,
-                            subtitle = "IP: ${node.ip}",
+                            subtitle = "Signal: ${node.rssi} dBm",
                             isGroup = false,
                             onClick = {
-                                chatViewModel.openChat(node.id)
+                                chatViewModel.openChat(node.id, node.name)
                                 onChatSelected(node.name)
                             }
                         )
