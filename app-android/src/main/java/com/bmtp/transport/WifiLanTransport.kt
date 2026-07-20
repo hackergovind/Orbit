@@ -210,7 +210,7 @@ object BleTransportManager {
         // Encode displayName in service data so peers can read it during scan
         val nameBytes = displayName.toByteArray(Charsets.UTF_8).take(20).toByteArray()
         val data = AdvertiseData.Builder()
-            .setIncludeDeviceName(false)
+            .setIncludeDeviceName(true) // also broadcast device name as fallback
             .addServiceUuid(ParcelUuid(BMTP_SERVICE_UUID))
             .addServiceData(ParcelUuid(BMTP_SERVICE_UUID), nameBytes)
             .build()
@@ -224,7 +224,7 @@ object BleTransportManager {
 
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-            .setReportDelay(500L)
+            .setReportDelay(0L) // 0 = instant, not batched
             .build()
 
         val filter = ScanFilter.Builder()
