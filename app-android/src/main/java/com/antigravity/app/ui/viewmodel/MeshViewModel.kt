@@ -2,20 +2,30 @@ package com.antigravity.app.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bmtp.core.config.CoreConfig
-import com.bmtp.core.logging.StdOutLogger
-import com.bmtp.sdk.BmtpClient
-import com.bmtp.transport.MockTransport
+import com.bmtp.transport.TransportManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 
+data class MeshNode(
+    val id: String,
+    val name: String,
+    val ip: String,
+    val signalStrength: Int,
+    val hopCount: Int
+)
+
 data class MeshState(
     val isConnected: Boolean = false,
-    val activeNodes: List<String> = emptyList(),
-    val myNodeId: String = ""
+    val activeNodes: List<MeshNode> = emptyList(),
+    val myNodeId: String = "",
+    val myName: String = "Orbit User",
+    val activeConnections: Int = 0,
+    val totalBytesSent: Long = 0,
+    val totalBytesReceived: Long = 0,
+    val networkHealth: String = "Good"
 )
 
 class MeshViewModel : ViewModel() {
@@ -23,32 +33,42 @@ class MeshViewModel : ViewModel() {
     private val _state = MutableStateFlow(MeshState())
     val state: StateFlow<MeshState> = _state.asStateFlow()
 
-    private var client: BmtpClient? = null
-
     init {
-        // Initialize the Antigravity SDK
-        val myId = "User-${UUID.randomUUID().toString().take(4)}"
-        val config = CoreConfig(nodeId = myId)
-        val transport = MockTransport(nodeId = myId) // In a real app, this would be BluetoothLeTransport
-        
-        client = BmtpClient(config, transport, StdOutLogger())
-        
+        val myId = "Orbit-${UUID.randomUUID().toString().take(6)}"
+        TransportManager.nodeId = myId
         _state.value = _state.value.copy(myNodeId = myId)
+
+        viewModelScope.launch {
+            TransportManager.discoveryFlow.collect { node ->
+                val currentNodes = _state.value.activeNodes.toMutableList()
+                val existingIndex = currentNodes.indexOfFirst { it.id == node.id }
+                if (existingIndex == -1) {
+                    currentNodes.add(MeshNode(node.id, node.name, node.ip, 100, 1))
+                } else {
+                    currentNodes[existingIndex] = MeshNode(node.id, node.name, node.ip, 100, 1)
+                }
+                _state.value = _state.value.copy(
+                    activeNodes = currentNodes,
+                    activeConnections = currentNodes.size,
+                    networkHealth = "Live"
+                )
+            }
+        }
+    }
+
+    fun updateName(newName: String) {
+        TransportManager.displayName = newName
+        _state.value = _state.value.copy(myName = newName)
     }
 
     fun startMesh() {
-        viewModelScope.launch {
-            client?.start()
-            _state.value = _state.value.copy(isConnected = true)
-            
-            // Mock discovering some peers over time
-            kotlinx.coroutines.delay(2000)
-            _state.value = _state.value.copy(activeNodes = listOf("Node-Alpha", "Node-Bravo"))
-        }
+        TransportManager.start()
+        _state.value = _state.value.copy(isConnected = true, networkHealth = "Scanning UDP...")
     }
     
     fun stopMesh() {
-        client?.stop()
-        _state.value = _state.value.copy(isConnected = false, activeNodes = emptyList())
+        TransportManager.stop()
+        _state.value = _state.value.copy(isConnected = false, activeNodes = emptyList(), networkHealth = "Offline")
     }
 }
+

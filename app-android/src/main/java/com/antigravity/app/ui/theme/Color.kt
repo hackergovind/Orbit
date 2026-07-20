@@ -2,11 +2,15 @@ package com.antigravity.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val NeonCyan = Color(0xFF00F3FF)
-val NeonPurple = Color(0xFFB500FF)
-val DeepBlack = Color(0xFF0A0A0A)
-val SurfaceDark = Color(0xFF161616)
-val GlassWhite = Color(0x1AFFFFFF) // 10% white for glass effect
-val TextPrimary = Color(0xFFFFFFFF)
-val TextSecondary = Color(0xFFA0A0A0)
-val ErrorRed = Color(0xFFFF3366)
+// Discord-like Foundations
+val Blurple = Color(0xFF5865F2)
+val ElectricGreen = Color(0xFF35ED7E)
+val VibrantMagenta = Color(0xFFEC48BD)
+val LinkCyan = Color(0xFF00B0F4)
+val IndigoCanvas = Color(0xFF0A0D3A)
+val RaisedIndigo = Color(0xFF1E2353)
+val Onyx = Color(0xFF23272A)
+val SolidBlack = Color(0xFF000000)
+val SolidWhite = Color(0xFFFFFFFF)
+val MutedInk = Color(0xFF333333)
+val TextMuted = Color(0xFFB9BBBE) // A lighter gray for dark mode readability

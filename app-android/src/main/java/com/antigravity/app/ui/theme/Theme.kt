@@ -9,34 +9,40 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = NeonCyan,
-    secondary = NeonPurple,
-    background = DeepBlack,
-    surface = SurfaceDark,
-    onPrimary = DeepBlack,
-    onSecondary = TextPrimary,
-    onBackground = TextPrimary,
-    onSurface = TextPrimary,
-    error = ErrorRed
+private val OrbitColorScheme = darkColorScheme(
+    primary = Blurple,
+    onPrimary = SolidWhite,
+    primaryContainer = RaisedIndigo,
+    onPrimaryContainer = SolidWhite,
+    secondary = ElectricGreen,
+    onSecondary = SolidBlack,
+    secondaryContainer = VibrantMagenta,
+    onSecondaryContainer = SolidWhite,
+    background = IndigoCanvas,
+    onBackground = SolidWhite,
+    surface = Onyx,
+    onSurface = SolidWhite,
+    surfaceVariant = RaisedIndigo,
+    onSurfaceVariant = TextMuted,
+    error = VibrantMagenta,
+    onError = SolidWhite
 )
 
 @Composable
-fun AntigravityTheme(
-    content: @Composable () -> Unit
-) {
-    val colorScheme = DarkColorScheme
+fun AntigravityTheme(content: @Composable () -> Unit) {
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
+            window.statusBarColor = OrbitColorScheme.background.toArgb()
+            window.navigationBarColor = OrbitColorScheme.surface.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
 
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = OrbitColorScheme,
+        typography = OrbitTypography,
         content = content
     )
 }

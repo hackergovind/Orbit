@@ -1,52 +1,82 @@
 package com.antigravity.app.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.bmtp.transport.TransportManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.UUID
+import kotlinx.coroutines.launch
 
 data class ChatMessage(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String,
+    val senderName: String,
     val text: String,
+    val timestamp: Long,
     val isFromMe: Boolean,
-    val timestamp: Long = System.currentTimeMillis()
+    val attachmentType: AttachmentType? = null
 )
+
+enum class AttachmentType {
+    FILE, VOICE
+}
 
 data class ChatState(
+    val peerId: String = "",
     val messages: List<ChatMessage> = emptyList(),
-    val currentInput: String = ""
+    val isVoiceRecording: Boolean = false
 )
 
-class ChatViewModel(private val targetNodeId: String) : ViewModel() {
+class ChatViewModel : ViewModel() {
 
     private val _state = MutableStateFlow(ChatState())
     val state: StateFlow<ChatState> = _state.asStateFlow()
 
-    fun updateInput(text: String) {
-        _state.value = _state.value.copy(currentInput = text)
+    init {
+        viewModelScope.launch {
+            TransportManager.messageFlow.collect { netMsg ->
+                // Ensure we only show messages for the current peer (or a global group)
+                // For simplicity, we just add it to the chat
+                val newMsg = ChatMessage(
+                    id = System.currentTimeMillis().toString(),
+                    senderName = if (netMsg.isFromMe) "Me" else netMsg.senderId,
+                    text = netMsg.text,
+                    timestamp = System.currentTimeMillis(),
+                    isFromMe = netMsg.isFromMe
+                )
+                _state.value = _state.value.copy(
+                    messages = _state.value.messages + newMsg
+                )
+            }
+        }
     }
 
-    fun sendMessage() {
-        val text = _state.value.currentInput
-        if (text.isBlank()) return
+    fun openChat(peerId: String) {
+        _state.value = _state.value.copy(peerId = peerId, messages = emptyList())
+    }
 
-        val newMessage = ChatMessage(text = text, isFromMe = true)
-        val updatedMessages = _state.value.messages + newMessage
+    fun sendMessage(text: String) {
+        val currentPeer = _state.value.peerId
+        if (currentPeer.isEmpty()) return
         
-        _state.value = _state.value.copy(
-            messages = updatedMessages,
-            currentInput = ""
+        viewModelScope.launch {
+            TransportManager.sendMessage(currentPeer, text)
+        }
+    }
+
+    fun setVoiceRecording(isRecording: Boolean) {
+        _state.value = _state.value.copy(isVoiceRecording = isRecording)
+    }
+
+    fun attachFile() {
+        val stubMsg = ChatMessage(
+            id = System.currentTimeMillis().toString(),
+            senderName = "Me",
+            text = "Sent a file attachment.",
+            timestamp = System.currentTimeMillis(),
+            isFromMe = true,
+            attachmentType = AttachmentType.FILE
         )
-        
-        // In a real integration, we'd call AntigravityClient here:
-        // client.getSession(targetNodeId).sendMessage(text.toByteArray())
-    }
-    
-    // Simulate receiving a message over the mesh
-    fun receiveMessage(text: String) {
-        val newMessage = ChatMessage(text = text, isFromMe = false)
-        val updatedMessages = _state.value.messages + newMessage
-        _state.value = _state.value.copy(messages = updatedMessages)
+        _state.value = _state.value.copy(messages = _state.value.messages + stubMsg)
     }
 }
