@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BMTP Mesh</string>
+    <string name="discovery_title">BMTP Mesh Network</string>
+    <string name="scanning">Scanning...</string>
+    <string name="scan_stopped">Scan stopped</string>
+    <string name="no_devices_found">No peers found</string>
+    <string name="no_devices_subtitle">Nearby BMTP devices will appear here</string>
+    <string name="enable_bluetooth">Enable Bluetooth</string>
+    <string name="bluetooth_disabled_message">Bluetooth must be enabled to discover nearby mesh peers.</string>
+    <string name="permissions_required">Permissions Required</string>
+    <string name="permissions_message">BMTP needs Bluetooth and location permissions to discover nearby devices.</string>
+    <string name="grant_permissions">Grant Permissions</string>
+    <string name="notification_channel_name">BMTP Mesh Service</string>
+    <string name="notification_channel_description">Keeps the mesh network active</string>
+    <string name="notification_content_title">BMTP Mesh Active</string>
+    <string name="notification_content_text_format">%d peers nearby</string>
+    <string name="signal_excellent">Excellent</string>
+    <string name="signal_good">Good</string>
+    <string name="signal_fair">Fair</string>
+    <string name="signal_weak">Weak</string>
+    <string name="signal_very_weak">Very Weak</string>
+    <string name="last_seen_format">Last seen %s</string>
+    <string name="device_id_label">Device ID</string>
+    <string name="rssi_label">RSSI</string>
+    <string name="error_scan_failed">Scan failed: %s</string>
+    <string name="error_advertise_failed">Advertising failed: %s</string>
+    <string name="start_scanning">Start Scanning</string>
+    <string name="stop_scanning">Stop Scanning</string>
+</resources>
